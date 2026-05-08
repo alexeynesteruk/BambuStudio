@@ -12,6 +12,10 @@
 
 #include <slic3r/GUI/Widgets/WebView.hpp>
 
+#if defined(__WXOSX__)
+#include "slic3r/Utils/MacDarkMode.hpp"
+#endif
+
 namespace pt = boost::property_tree;
 
 namespace Slic3r {
@@ -69,6 +73,20 @@ void PrinterWebView::load_url(const wxString& url)
 //    this->Raise();
     if (m_browser == nullptr)
         return;
+#if defined(__WXOSX__)
+    // WKWebView's loadRequest: for file:// URLs sandboxes each load so that
+    // <script src="./assets/x.js"> (used by the embedded device_page WebView)
+    // silently returns 0 bytes and the tab renders blank. Use
+    // loadFileURL:allowingReadAccessToURL: with the HTML's parent directory so
+    // sibling assets load. For http(s) URLs fall through to the wx default.
+    if (url.StartsWith("file://")) {
+        void * native = m_browser->GetNativeBackend();
+        if (native && Slic3r::GUI::WKWebView_loadFileURL(native, url)) {
+            UpdateState();
+            return;
+        }
+    }
+#endif
     m_browser->LoadURL(url);
     //m_browser->SetFocus();
     UpdateState();

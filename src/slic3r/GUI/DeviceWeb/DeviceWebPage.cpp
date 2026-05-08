@@ -73,6 +73,26 @@ void DeviceWebPage::LoadUrl()
 #endif
 
     m_device_webview->load_url(url);
+
+    // The device_page React app is designed for Windows at default DPI and
+    // feels oversized on macOS Retina. Apply a modest page-zoom to bring it
+    // in line with the rest of the Studio UI. Runs after LoadURL so the
+    // document exists; <wx/webview.h> fires wxEVT_WEBVIEW_LOADED when ready,
+    // but injecting on every load via wxEVT_WEBVIEW_NAVIGATED lets the zoom
+    // re-apply on SPA route changes and WebView reloads too.
+    wxWebView* wv = m_device_webview ? m_device_webview->GetWebView() : nullptr;
+    if (wv) {
+        wv->Bind(wxEVT_WEBVIEW_LOADED, [](wxWebViewEvent& evt) {
+            if (auto* w = dynamic_cast<wxWebView*>(evt.GetEventObject())) {
+                // zoom: 0.85 = 85%. Tuned to match the rest of the Studio UI
+                // density on macOS Retina displays. Applied in CSS so that
+                // WebKit's built-in zoom stepping doesn't override it and the
+                // viewport doesn't reflow on every reload.
+                w->RunScript("document.documentElement.style.zoom='0.85';");
+            }
+            evt.Skip();
+        });
+    }
 }
 
 void DeviceWebPage::on_sys_color_changed()

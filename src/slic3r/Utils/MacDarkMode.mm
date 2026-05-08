@@ -100,6 +100,50 @@ void WKWebView_setTransparentBackground(void * web)
     [webView registerForDraggedTypes: @[NSFilenamesPboardType]];
 }
 
+bool WKWebView_loadFileURL(void * web, wxString const & urlStr)
+{
+    if (!web) return false;
+    // urlStr is a file:// URL optionally followed by a query string, e.g.
+    //   file:///Applications/X.app/Contents/Resources/web/device_page/dist/index.html?lang=en
+    // We need to convert this to an NSURL that WKWebView can load, AND derive
+    // a filesystem directory to grant read access for relative ./assets/* loads.
+    //
+    // Copy into a local std::string to avoid wxCFStringRef lifetime issues, then
+    // split on '?' to get the path portion; strip file:// prefix to get a real
+    // on-disk path for fileURLWithPath: (safer than URLWithString: for paths
+    // with spaces, unicode, unencoded chars, etc.).
+    std::string s = urlStr.ToStdString(wxConvUTF8);
+    if (s.rfind("file://", 0) != 0)
+        return false;
+    std::string pathPart = s.substr(std::string("file://").length());
+    std::string::size_type q = pathPart.find('?');
+    std::string query;
+    if (q != std::string::npos) {
+        query = pathPart.substr(q);  // includes leading '?'
+        pathPart.resize(q);
+    }
+    if (pathPart.empty())
+        return false;
+    NSString * nsPath = [[NSString alloc] initWithUTF8String:pathPart.c_str()];
+    if (!nsPath)
+        return false;
+    NSURL * fileURL = [NSURL fileURLWithPath:nsPath];
+    if (!fileURL) { [nsPath release]; return false; }
+    // If there was a query string, append it back so the React app sees ?lang=…
+    if (!query.empty()) {
+        NSString * full = [[fileURL absoluteString] stringByAppendingString:
+                           [NSString stringWithUTF8String:query.c_str()]];
+        NSURL * withQuery = [NSURL URLWithString:full];
+        if (withQuery)
+            fileURL = withQuery;
+    }
+    NSURL * readRoot = [[NSURL fileURLWithPath:nsPath] URLByDeletingLastPathComponent];
+    if (!readRoot) { [nsPath release]; return false; }
+    [(WKWebView*)web loadFileURL:fileURL allowingReadAccessToURL:readRoot];
+    [nsPath release];
+    return true;
+}
+
 void openFolderForFile(wxString const & file)
 {
     NSArray *fileURLs = [NSArray arrayWithObjects:wxCFStringRef(file).AsNSString(), /* ... */ nil];
