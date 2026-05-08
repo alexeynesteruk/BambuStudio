@@ -283,7 +283,10 @@ if (NOT MSVC AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMP
     endif()
 
     if((${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang") AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER 15)
-        add_compile_options(-Wno-error=enum-constexpr-conversion)
+        # -Werror=enum-constexpr-conversion was needed for Xcode 14-15; Xcode 16+
+        # removed the warning option, which then triggers -Werror,-Wunknown-warning-option
+        # in subprojects that set -Werror (Clipper2). Suppress unknown-option errors.
+        add_compile_options(-Wno-unknown-warning-option -Wno-error=enum-constexpr-conversion)
     endif()
 
     #GCC generates loads of -Wunknown-pragmas when compiling igl. The fix is not easy due to a bug in gcc, see

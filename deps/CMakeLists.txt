@@ -144,6 +144,8 @@ function(bambustudio_add_cmake_project projectname)
             -DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
             -DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
             -DCMAKE_TOOLCHAIN_FILE:STRING=${CMAKE_TOOLCHAIN_FILE}
+            # CMake 4.x removed compatibility with VERSION < 3.5; many bundled deps still declare it
+            -DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.5
             -DBUILD_SHARED_LIBS:BOOL=OFF
             ${_cmake_osx_arch}
             "${_configs_line}"

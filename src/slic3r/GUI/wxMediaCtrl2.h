@@ -39,7 +39,8 @@ public:
 
     int GetLastError() const { return m_error; }
 
-    static constexpr wxMediaState MEDIASTATE_BUFFERING = (wxMediaState) 6;
+    // Apple clang 21+ rejects constexpr cast to out-of-range enum; use const for runtime init.
+    static const wxMediaState MEDIASTATE_BUFFERING;
 
 protected:
     void DoSetSize(int x, int y, int width, int height, int sizeFlags) override;

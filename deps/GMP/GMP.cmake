@@ -36,6 +36,8 @@ else ()
     # GCC 15 defaults to a newer C dialect that breaks GMP 6.2.1 configure probes.
     # Force a compatible GNU C mode for GMP and dependent MPFR builds.
     set(_gmp_ccflags "-std=gnu17 -O2 -DNDEBUG -fPIC -DPIC -Wall -Wmissing-prototypes -Wpointer-arith -pedantic -fomit-frame-pointer -fno-common")
+    # Apple clang 16+ rejects -std=gnu17 for C++ and some C-only warnings; give CXX its own flag set.
+    set(_gmp_cxxflags "-std=gnu++17 -O2 -DNDEBUG -fPIC -DPIC -Wall -Wpointer-arith -fomit-frame-pointer -fno-common")
     set(_gmp_build_tgt "${CMAKE_SYSTEM_PROCESSOR}")
 
     if (APPLE)
@@ -53,9 +55,11 @@ else ()
                 set(_gmp_host_arch_flags "-arch x86_64")
             endif()
             set(_gmp_ccflags "${_gmp_ccflags} ${_gmp_host_arch_flags} -mmacosx-version-min=${DEP_OSX_TARGET}")
+            set(_gmp_cxxflags "${_gmp_cxxflags} ${_gmp_host_arch_flags} -mmacosx-version-min=${DEP_OSX_TARGET}")
             set(_gmp_build_tgt --build=${_gmp_build_arch}-apple-darwin --host=${_gmp_host_arch}-apple-darwin)
         else ()
             set(_gmp_ccflags "${_gmp_ccflags} -mmacosx-version-min=${DEP_OSX_TARGET}")
+            set(_gmp_cxxflags "${_gmp_cxxflags} -mmacosx-version-min=${DEP_OSX_TARGET}")
             set(_gmp_build_tgt "--build=${_gmp_build_arch}-apple-darwin")
         endif()
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -80,7 +84,7 @@ else ()
         DOWNLOAD_DIR ${DEP_DOWNLOAD_DIR}/GMP
         PATCH_COMMAND git apply ${GMP_DIRECTORY_FLAG} --verbose ${CMAKE_CURRENT_LIST_DIR}/0001-GMP_GCC15.patch
         BUILD_IN_SOURCE ON
-        CONFIGURE_COMMAND  env "CFLAGS=${_gmp_ccflags}" "CXXFLAGS=${_gmp_ccflags}" ./configure ${_cross_compile_arg} --enable-shared=no --enable-cxx=yes --enable-static=yes "--prefix=${DESTDIR}/usr/local" ${_gmp_build_tgt}
+        CONFIGURE_COMMAND  env "CFLAGS=${_gmp_ccflags}" "CXXFLAGS=${_gmp_cxxflags}" ./configure ${_cross_compile_arg} --enable-shared=no --enable-cxx=yes --enable-static=yes "--prefix=${DESTDIR}/usr/local" ${_gmp_build_tgt}
         BUILD_COMMAND     make -j
         INSTALL_COMMAND   make install
     )

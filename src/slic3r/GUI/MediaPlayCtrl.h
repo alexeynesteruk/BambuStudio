@@ -89,10 +89,11 @@ private:
     static bool get_stream_url(std::string *url = nullptr);
 
 private:
-    static constexpr wxMediaState MEDIASTATE_IDLE = (wxMediaState) 3;
-    static constexpr wxMediaState MEDIASTATE_INITIALIZING = (wxMediaState) 4;
-    static constexpr wxMediaState MEDIASTATE_LOADING = (wxMediaState) 5;
-    static constexpr wxMediaState MEDIASTATE_BUFFERING = (wxMediaState) 6;
+    // Apple clang 21+ rejects constexpr cast to out-of-range enum; use const for runtime init.
+    static const wxMediaState MEDIASTATE_IDLE;
+    static const wxMediaState MEDIASTATE_INITIALIZING;
+    static const wxMediaState MEDIASTATE_LOADING;
+    static const wxMediaState MEDIASTATE_BUFFERING;
 
     // token
     std::shared_ptr<int> m_token = std::make_shared<int>(0);

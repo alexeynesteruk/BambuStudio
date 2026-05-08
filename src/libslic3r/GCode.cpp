@@ -5105,9 +5105,10 @@ GCode::LayerResult GCode::process_layer(
 
                 if (instance_to_print.object_by_extruder.support && !instance_to_print.object_by_extruder.support->empty()) {
                     ExtrusionRole support_role = instance_to_print.object_by_extruder.support_extrusion_role;
-                    gcode += this->extrude_support(instance_to_print.object_by_extruder.support->chained_path_from(m_last_pos, support_role));
+                    // ZAA merge: m_last_pos is Point3; chained_path_from expects 2D Point.
+                    gcode += this->extrude_support(instance_to_print.object_by_extruder.support->chained_path_from(m_last_pos.to_point(), support_role));
                     if (support_role == erSupportMaterialInterface)
-                        gcode += this->extrude_support(instance_to_print.object_by_extruder.support->chained_path_from(m_last_pos, erSupportIroning));
+                        gcode += this->extrude_support(instance_to_print.object_by_extruder.support->chained_path_from(m_last_pos.to_point(), erSupportIroning));
                 }
 
                 // Mixed sublayer: object label end (cf. normal path L4990-5006)

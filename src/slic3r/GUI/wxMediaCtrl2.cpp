@@ -22,6 +22,9 @@ public:
 
 wxDEFINE_EVENT(EVT_MEDIA_CTRL_STAT, wxCommandEvent);
 
+// Apple clang 21+ rejects constexpr cast to out-of-range enum; define as const at namespace scope.
+const wxMediaState wxMediaCtrl2::MEDIASTATE_BUFFERING = (wxMediaState) 6;
+
 wxMediaCtrl2::wxMediaCtrl2(wxWindow *parent)
 {
 #ifdef __WIN32__

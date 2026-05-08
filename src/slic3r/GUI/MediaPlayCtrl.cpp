@@ -32,6 +32,13 @@
 #include <wx/dcgraph.h>
 #include <wx/mstream.h>
 
+namespace Slic3r { namespace GUI {
+const wxMediaState MediaPlayCtrl::MEDIASTATE_IDLE = (wxMediaState) 3;
+const wxMediaState MediaPlayCtrl::MEDIASTATE_INITIALIZING = (wxMediaState) 4;
+const wxMediaState MediaPlayCtrl::MEDIASTATE_LOADING = (wxMediaState) 5;
+const wxMediaState MediaPlayCtrl::MEDIASTATE_BUFFERING = (wxMediaState) 6;
+}}
+
 static std::map<int, std::string> error_messages = {
     {1, L("The device cannot handle more conversations. Please retry later.")},
     {2, L("Player is malfunctioning. Please reinstall the system player.")},
