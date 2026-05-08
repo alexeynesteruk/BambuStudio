@@ -69,6 +69,7 @@ set(lisbslic3r_sources
     CommonDefs.hpp
     Config.cpp
     Config.hpp
+    ContourZ.cpp
     CurveAnalyzer.cpp
     CurveAnalyzer.hpp
     CutUtils.cpp

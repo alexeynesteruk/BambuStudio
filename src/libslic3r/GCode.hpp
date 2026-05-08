@@ -199,7 +199,7 @@ public:
     const Vec2d&    origin() const { return m_origin; }
     void            set_origin(const Vec2d &pointf);
     void            set_origin(const coordf_t x, const coordf_t y) { this->set_origin(Vec2d(x, y)); }
-    const Point&    last_pos() const { return m_last_pos; }
+    Point           last_pos() const { return m_last_pos.to_point(); }
     const bool&     last_scarf_seam_flag() const { return m_last_scarf_seam_flag; }
     const bool&     scarf_seam_start_flag() const { return m_scarf_seam_start; }
     Vec2d           point_to_gcode(const Point &point) const;
@@ -393,7 +393,8 @@ private:
     size_t get_nozzle_config_index(int filament_id) const;
     void   update_placeholder_parser_with_variant_params();
 
-    void            set_last_pos(const Point &pos) { m_last_pos = pos; m_last_pos_defined = true; }
+    void            set_last_pos(const Point &pos) { m_last_pos = Point3(pos, 0); m_last_pos_defined = true; }
+    void            set_last_pos(const Point3 &pos) { m_last_pos = pos; m_last_pos_defined = true; }
     void            set_last_scarf_seam_flag(bool flag) { m_last_scarf_seam_flag = flag; }
     void            set_scarf_seam_start_flag(bool flag) { m_scarf_seam_start = flag; }
     bool            last_pos_defined() const { return m_last_pos_defined; }
@@ -402,9 +403,9 @@ private:
     // BBS
     std::string     change_layer(coordf_t print_z);
     std::string     extrude_entity(const ExtrusionEntity &entity, std::string description = "", double speed = -1.);
-    std::string     extrude_loop(ExtrusionLoop loop, std::string description, double speed = -1.);
-    std::string     extrude_multi_path(ExtrusionMultiPath multipath, std::string description = "", double speed = -1.);
-    std::string     extrude_path(ExtrusionPath path, std::string description = "", double speed = -1.);
+    std::string     extrude_loop(const ExtrusionLoop &loop, std::string description, double speed = -1.);
+    std::string     extrude_multi_path(const ExtrusionMultiPath &multipath, std::string description = "", double speed = -1.);
+    std::string     extrude_path(const ExtrusionPath &path, std::string description = "", double speed = -1.);
 
     //smooth speed function
     void            smooth_speed_discontinuity_area(ExtrusionPaths &paths);
@@ -545,7 +546,7 @@ private:
     double                              m_last_mm3_per_mm;
 #endif // ENABLE_GCODE_VIEWER_DATA_CHECKING
 
-    Point                               m_last_pos;
+    Point3                              m_last_pos;
     bool                                m_last_pos_defined;
     bool                                m_last_scarf_seam_flag;
     bool                                m_scarf_seam_start;
